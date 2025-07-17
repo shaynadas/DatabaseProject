@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Import Page</title>
+  <style>
+    body {
+      display: flex;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    .sidebar {
+      width: 200px;
+      background-color: #f0f0f0;
+      padding: 20px;
+      height: 100vh;
+    }
+    .main {
+      flex-grow: 1;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    footer {
+      background-color: #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+    input[type="file"] {
+      display: block;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+    .message {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <form id="upload-form" enctype="multipart/form-data">
+      <input type="file" id="csvFile" name="csvFile" accept=".csv" required />
+      <button type="submit">Import</button>
+    </form>
+  </div>
+
+  <div class="main">
+    <h1>Import Users</h1>
+    <p>Select a CSV file and click Import to add users to the database.</p>
+    <div class="message" id="message"></div>
+    <footer>
+      &copy; 2025 Shayna Das
+    </footer>
+  </div>
+
+  <script>
+    const form = document.getElementById('upload-form');
+    const messageEl = document.getElementById('message');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fileInput = document.getElementById('csvFile');
+      if (!fileInput.files.length) {
+        messageEl.textContent = 'Please select a CSV file.';
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('csvFile', fileInput.files[0]);
+
+      try {
+        const response = await fetch('/import-users', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          messageEl.style.color = 'green';
+          messageEl.textContent = 'CSV imported successfully!';
+        } else {
+          messageEl.style.color = 'red';
+          const text = await response.text();
+          messageEl.textContent = 'Import failed: ' + text;
+        }
+      } catch (error) {
+        messageEl.style.color = 'red';
+        messageEl.textContent = 'Error: ' + error.message;
+      }
+    });
+  </script>
+</body>
+</html>

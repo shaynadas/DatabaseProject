@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Home Page</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <button onclick="location.href='import.html'">Import</button>
+      <button onclick="location.href='export.html'">Export</button>
+    </aside>
+
+    <main class="main-content">
+      <header>
+        <h1>User Table</h1>
+      </header>
+
+      <section class="table-section">
+        <table id="user-table">
+          <thead>
+            <tr><th>ID</th><th>Name</th><th>Email</th><th>Birthdate</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <footer>
+        <p>© 2025 Shayna Das</p>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    fetch('/api/users')
+      .then(response => response.json())
+      .then(data => {
+        const tbody = document.querySelector('#user-table tbody');
+        data.forEach(user => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${user.id}</td>
+            <td>${user.name}</td>
+            <td>${user.email}</td>
+            <td>${user.birthdate || '—'}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      });
+  </script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Export Page</title>
+  <style>
+    body {
+      display: flex;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    .sidebar {
+      width: 200px;
+      background-color: #f0f0f0;
+      padding: 20px;
+      height: 100vh;
+    }
+    .main {
+      flex-grow: 1;
+      padding: 20px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    footer {
+      background-color: #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <button onclick="downloadCSV()">Export</button>
+  </div>
+
+  <div class="main">
+    <h1>Export Users</h1>
+    <p>Click the Export button to download the user table data as a CSV file.</p>
+    <footer>
+      &copy; 2025 Shayna Das
+    </footer>
+  </div>
+
+  <script>
+    function downloadCSV() {
+      window.location.href = '/export-users';
+    }
+  </script>
+</body>
+</html>
