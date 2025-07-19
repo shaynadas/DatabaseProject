@@ -1,21 +1,14 @@
 const express = require('express');
 const { Client } = require('pg');
 const path = require('path');
-const { Parser } = require('json2csv');
 const multer = require('multer');
-const csv = require('csv-parser');
 const fs = require('fs');
+const { Parser } = require('json2csv'); // ✅ Required for CSV export
 
 const app = express();
 const PORT = 3000;
 
-// Configure multer for file uploads (stores files temporarily in "uploads/")
-const upload = multer({ dest: 'uploads/' });
-
-// Serve static files from "public" folder
-app.use(express.static('public'));
-
-// PostgreSQL connection setup
+// PostgreSQL client
 const client = new Client({
   user: 'shaynadas',
   host: 'localhost',
@@ -28,105 +21,72 @@ client.connect()
   .then(() => console.log('Connected to PostgreSQL successfully!'))
   .catch(err => console.error('Connection error', err.stack));
 
-// Serve home.html on "/"
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'home.html'));
-});
+// Middleware
+app.use(express.static('public'));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
-// Serve import.html
-app.get('/import.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'import.html'));
-});
+// File upload setup (for import)
+const upload = multer({ dest: 'uploads/' });
 
-// Serve export.html
-app.get('/export.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'export.html'));
-});
+// Serve HTML pages
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'home.html')));
+app.get('/import.html', (req, res) => res.sendFile(path.join(__dirname, 'public', 'import.html')));
+app.get('/export.html', (req, res) => res.sendFile(path.join(__dirname, 'public', 'export.html')));
 
-// API route to get all users as JSON
+// Get users for homepage
 app.get('/api/users', async (req, res) => {
   try {
     const result = await client.query('SELECT * FROM users');
     res.json(result.rows);
   } catch (err) {
-    console.error('Error fetching users:', err);
+    console.error(err);
     res.status(500).send('Error fetching users');
   }
 });
 
-// Export users as CSV
-app.get('/export-users', async (req, res) => {
+// ✅ Export route (CSV download)
+app.get('/export', async (req, res) => {
   try {
     const result = await client.query('SELECT * FROM users');
-    const users = result.rows;
+    const jsonData = result.rows;
 
-    const fields = ['id', 'name', 'email', 'birthdate'];
-    const json2csvParser = new Parser({ fields });
-    const csv = json2csvParser.parse(users);
+    const fields = ['id', 'name', 'email']; // Adjust field names as needed
+    const parser = new Parser({ fields });
+    const csv = parser.parse(jsonData);
 
     res.header('Content-Type', 'text/csv');
-    res.attachment('users.csv');
+    res.attachment('export.csv');
     res.send(csv);
   } catch (err) {
-    console.error('CSV Export Error:', err);
-    res.status(500).send('Could not export data');
+    console.error('Export error:', err);
+    res.status(500).send('Export failed');
   }
 });
 
-// Import users from uploaded CSV file
-app.post('/import-users', upload.single('csvFile'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).send('No file uploaded.');
-  }
-
-  const results = [];
+// ✅ Import route
+app.post('/import', upload.single('csvFile'), async (req, res) => {
   const filePath = req.file.path;
+  const csv = require('csv-parser');
+  const results = [];
 
   fs.createReadStream(filePath)
     .pipe(csv())
-    .on('data', (data) => {
-      results.push(data);
-    })
+    .on('data', (data) => results.push(data))
     .on('end', async () => {
       try {
         for (const row of results) {
-          // Extract and sanitize fields (adjust names if your CSV headers differ)
-          const id = row.id ? parseInt(row.id) : null;
-          const name = row.name || null;
-          const email = row.email || null;
-          const birthdate = row.birthdate || null;
-
-          if (!id || !name || !email) {
-            // Skip rows missing required fields
-            continue;
-          }
-
-          await client.query(
-            `INSERT INTO users (id, name, email, birthdate) 
-             VALUES ($1, $2, $3, $4)
-             ON CONFLICT (id) DO UPDATE 
-             SET name = EXCLUDED.name,
-                 email = EXCLUDED.email,
-                 birthdate = EXCLUDED.birthdate`,
-            [id, name, email, birthdate]
-          );
+          await client.query('INSERT INTO users (name, email) VALUES ($1, $2)', [row.name, row.email]);
         }
-        fs.unlinkSync(filePath); // Delete uploaded file
+        fs.unlinkSync(filePath);
         res.send('Import successful');
       } catch (err) {
         console.error('Error inserting data:', err);
-        fs.unlinkSync(filePath);
         res.status(500).send('Error importing data');
       }
-    })
-    .on('error', (err) => {
-      console.error('Error reading CSV:', err);
-      fs.unlinkSync(filePath);
-      res.status(400).send('Invalid CSV file');
     });
 });
 
-// Start server
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });

@@ -1,55 +1,44 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Export Page</title>
-  <style>
-    body {
-      display: flex;
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
-    .sidebar {
-      width: 200px;
-      background-color: #f0f0f0;
-      padding: 20px;
-      height: 100vh;
-    }
-    .main {
-      flex-grow: 1;
-      padding: 20px;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    footer {
-      background-color: #ddd;
-      padding: 10px;
-      text-align: center;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <title>Export</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <div class="sidebar">
-    <button onclick="downloadCSV()">Export</button>
-  </div>
+  <div class="container">
+    <div class="sidebar">
+      <a href="/">Home</a>
+      <a href="/import.html">Import</a>
+      <a href="/export.html">Export</a>
+    </div>
+    <div class="main-content">
+      <h1>Export CSV</h1>
+      <a href="/export" download>
+        <button>Download CSV</button>
+      </a>
 
-  <div class="main">
-    <h1>Export Users</h1>
-    <p>Click the Export button to download the user table data as a CSV file.</p>
-    <footer>
-      &copy; 2025 Shayna Das
-    </footer>
+      <h2>Current Users</h2>
+      <table id="user-table" border="1">
+        <thead>
+          <tr><th>ID</th><th>Name</th><th>Email</th></tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
   </div>
+  <footer>© 2025 Your Project</footer>
 
   <script>
-    function downloadCSV() {
-      window.location.href = '/export-users';
-    }
+    fetch('/api/users')
+      .then(res => res.json())
+      .then(data => {
+        const tableBody = document.getElementById('table-body');
+        data.forEach(user => {
+          const row = `<tr><td>${user.id}</td><td>${user.name}</td><td>${user.email}</td></tr>`;
+          tableBody.insertAdjacentHTML('beforeend', row);
+        });
+      });
   </script>
 </body>
 </html>

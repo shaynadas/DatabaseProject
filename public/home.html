@@ -1,51 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Home Page</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>Home</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <div class="container">
-    <aside class="sidebar">
-      <button onclick="location.href='import.html'">Import</button>
-      <button onclick="location.href='export.html'">Export</button>
-    </aside>
-
-    <main class="main-content">
-      <header>
-        <h1>User Table</h1>
-      </header>
-
-      <section class="table-section">
-        <table id="user-table">
+    <div class="sidebar">
+      <a href="/">Home</a>
+      <a href="/import.html">Import</a>
+      <a href="/export.html">Export</a>
+    </div>
+    <div class="main-content">
+      <h1>User Table</h1>
+      <div style="margin-top: 110px;"> <!-- Adjust this value to match the spacing -->
+        <table id="user-table" border="1">
           <thead>
-            <tr><th>ID</th><th>Name</th><th>Email</th><th>Birthdate</th></tr>
+            <tr><th>ID</th><th>Name</th><th>Email</th></tr>
           </thead>
-          <tbody></tbody>
+          <tbody id="table-body"></tbody>
         </table>
-      </section>
-
-      <footer>
-        <p>© 2025 Shayna Das</p>
-      </footer>
-    </main>
+      </div>
+    </div>    
   </div>
+  <footer>© 2025 Your Project</footer>
 
   <script>
     fetch('/api/users')
-      .then(response => response.json())
+      .then(res => res.json())
       .then(data => {
-        const tbody = document.querySelector('#user-table tbody');
+        const tableBody = document.getElementById('table-body');
         data.forEach(user => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${user.id}</td>
-            <td>${user.name}</td>
-            <td>${user.email}</td>
-            <td>${user.birthdate || '—'}</td>
-          `;
-          tbody.appendChild(row);
+          const row = `<tr><td>${user.id}</td><td>${user.name}</td><td>${user.email}</td></tr>`;
+          tableBody.insertAdjacentHTML('beforeend', row);
         });
       });
   </script>
