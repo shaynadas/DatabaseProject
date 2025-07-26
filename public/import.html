@@ -1,9 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Import</title>
-  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    form {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    select, input[type="text"] {
+      padding: 6px 8px;
+      font-size: 1rem;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -15,15 +27,26 @@
     <div class="main-content">
       <h1>Import CSV</h1>
       <form id="importForm" enctype="multipart/form-data">
-        <input type="file" name="csvFile" accept=".csv" required>
+        <input type="file" name="csvFile" accept=".csv" required />
         <button type="submit">Upload CSV</button>
+        
+        <!-- Filter dropdown -->
+        <select name="filterOption" id="filterOption">
+          <option value="all">All Rows</option>
+          <option value="gmail">Only @gmail.com</option>
+          <option value="after2000">Birthdate after 2000</option>
+        </select>
+
+        <!-- New row range box -->
+        <input type="text" name="rowRange" id="rowRange" placeholder="Row Range (optional)" />
       </form>
+
       <p id="importStatus"></p>
 
       <h2>Current Users</h2>
       <table id="user-table" border="1">
         <thead>
-          <tr><th>ID</th><th>Name</th><th>Email</th></tr>
+          <tr><th>ID</th><th>Name</th><th>Email</th><th>Birthdate</th></tr>
         </thead>
         <tbody id="table-body"></tbody>
       </table>
@@ -38,7 +61,7 @@
       const res = await fetch('/import', { method: 'POST', body: formData });
       const msg = await res.text();
       document.getElementById('importStatus').innerText = msg;
-      loadUsers(); // Reload updated table
+      loadUsers(); // Reload updated table after import
     });
 
     function loadUsers() {
@@ -48,7 +71,12 @@
           const tableBody = document.getElementById('table-body');
           tableBody.innerHTML = '';
           data.forEach(user => {
-            const row = `<tr><td>${user.id}</td><td>${user.name}</td><td>${user.email}</td></tr>`;
+            const row = `<tr>
+              <td>${user.id}</td>
+              <td>${user.name}</td>
+              <td>${user.email}</td>
+              <td>${user.birthdate ? new Date(user.birthdate).toLocaleDateString() : ''}</td>
+            </tr>`;
             tableBody.insertAdjacentHTML('beforeend', row);
           });
         });

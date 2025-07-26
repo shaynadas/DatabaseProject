@@ -17,7 +17,7 @@
       <div style="margin-top: 110px;"> <!-- Adjust this value to match the spacing -->
         <table id="user-table" border="1">
           <thead>
-            <tr><th>ID</th><th>Name</th><th>Email</th></tr>
+            <tr><th>ID</th><th>Name</th><th>Email</th><th>Birthdate</th></tr>
           </thead>
           <tbody id="table-body"></tbody>
         </table>
@@ -32,7 +32,7 @@
       .then(data => {
         const tableBody = document.getElementById('table-body');
         data.forEach(user => {
-          const row = `<tr><td>${user.id}</td><td>${user.name}</td><td>${user.email}</td></tr>`;
+          const row = `<tr><td>${user.id}</td><td>${user.name}</td><td>${user.email}</td><td>${user.birthdate}</td></tr>`;
           tableBody.insertAdjacentHTML('beforeend', row);
         });
       });

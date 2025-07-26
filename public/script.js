@@ -1,3 +1,4 @@
+
 document.addEventListener('DOMContentLoaded', () => {
   fetch('/api/users')
     .then(res => res.json())
